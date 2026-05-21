@@ -2,7 +2,7 @@
 
 ```bash
 project/
-├── src/           # .tdf (AHDL source) and .bdf (block diagrams) files
+├── src/           # .vhd (VHDL source), .bdf (block diagrams) files and .cmp (Component files)
 │   ├── top.tdf    # Top-level Entity
 │   └── modules/   # Reusable modules
 ├── test/          # Unity tests
