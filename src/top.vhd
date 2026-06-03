@@ -1,39 +1,27 @@
--- EXAMPLE CODE
-
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
+USE IEEE.i2c_pkg.ALL;
 
-ENTITY top IS
-	PORT(
-		x : IN  integer;
-		y : OUT integer 
+entity top is
+	port (
+		clock : in    std_logic;
+		rst_n : in    std_logic;
+		
+		scl   : out   std_logic;
+		sda   : inout std_logic
 	);
-END ENTITY;
+end entity;
 
-ARCHITECTURE top_level OF top IS
-	COMPONENT dff
-		PORT(
-			d    : IN  std_logic;
-			clk  : IN  std_logic;
-			clrn : IN  std_logic;
-			prn  : IN  std_logic;
-			q    : OUT std_logic
-		);
-	END COMPONENT;
-	
-	SIGNAL s : integer;
-	CONSTANT c : integer := 7;
-	SHARED VARIABLE v1 : integer;
-	
-BEGIN
-	PROCESS (x)
-		VARIABLE v2 : integer := 3;
-	
-	BEGIN
-		v1 := 5;
-		s <= v1 + v2 + c;
-	END PROCESS;
-	
-	y <= s + x;
+architecture top_level of top is
+	signal temp_data : std_logic_vector(15 downto 0);
 
-END top_level;
+begin
+	temperature : i2c port map (
+		clk => clock,
+		rst_n => rst_n,
+		scl => scl,
+		sda => sda,
+		data => temp_data
+	);
+
+end top_level;
