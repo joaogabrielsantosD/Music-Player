@@ -14,7 +14,6 @@ end seven_seg;
 architecture bhv of seven_seg is 
 	signal temp_value_unsigned : std_logic_vector(7 downto 0);
 	signal temp_value_signed   : std_logic_vector(7 downto 0);
-	signal temp_value 			: std_logic_vector(7 downto 0);
 	
 	signal negative : std_logic := '0';
 	
@@ -82,32 +81,32 @@ BEGIN
 			
 			if data_in(15) = '1' then 				-- negative value
 				negative <= '1'; 						-- active the point
-				temp_value <= temp_value_signed; -- get the negative value from temperature
+				digit_hundred <= to_integer(unsigned(temp_value_signed)) / 100;
+				digit_tens    <= (to_integer(unsigned(temp_value_signed)) / 10) mod 10;
+				digit_units   <= to_integer(unsigned(temp_value_signed)) mod 10;			
 			else
 				negative <= '0';
-				temp_value <= temp_value_unsigned; 
+				digit_hundred <= to_integer(unsigned(temp_value_unsigned)) / 100;
+				digit_tens    <= (to_integer(unsigned(temp_value_unsigned)) / 10) mod 10;
+				digit_units   <= to_integer(unsigned(temp_value_unsigned)) mod 10; 
 			end if;
-			
-			digit_hundred <= to_integer(unsigned(temp_value)) / 100;
-			digit_tens    <= (to_integer(unsigned(temp_value)) / 10) mod 10;
-			digit_units   <= to_integer(unsigned(temp_value)) mod 10;
 
          case seletor is
-            WHEN 0 => 
+            when 0 => 
 					dig <= "0111";
 					seg <= "1" & (not negative) & "111111"; 
 
-					WHEN 1 =>
-                 dig <= "1011";
-					  seg <= decode(digit_hundred);
+				when 1 =>
+               dig <= "1011";
+					seg <= decode(digit_hundred);
 
-             WHEN 2 =>
-                 dig <= "1101";
-					  seg <= decode(digit_tens);
+            when 2 =>
+               dig <= "1101";
+					seg <= decode(digit_tens);
 
-             WHEN 3 =>
-                 dig <= "1110";
-					  seg <= decode(digit_units);
+            when 3 =>
+               dig <= "1110";
+					seg <= decode(digit_units);
          end case;
       end if;
    end process;
