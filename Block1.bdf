@@ -246,7 +246,7 @@ on the Quartus Prime software download page.
 (symbol
 	(rect 224 328 432 504)
 	(text "lcd_musicas" (rect 5 0 64 11)(font "Arial" ))
-	(text "inst4" (rect 8 160 31 171)(font "DejaVu Sans Condensed" ))
+	(text "inst4" (rect 8 160 30 171)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -307,14 +307,14 @@ on the Quartus Prime software download page.
 		(pt 208 32)
 		(output)
 		(text "lcd_e" (rect 0 0 25 11)(font "Arial" ))
-		(text "lcd_e" (rect 166 27 191 38)(font "Arial" ))
+		(text "lcd_e" (rect 166 27 187 38)(font "Arial" ))
 		(line (pt 208 32)(pt 192 32))
 	)
 	(port
 		(pt 208 48)
 		(output)
 		(text "lcd_bar[9..0]" (rect 0 0 59 11)(font "Arial" ))
-		(text "lcd_bar[9..0]" (rect 138 43 197 54)(font "Arial" ))
+		(text "lcd_bar[9..0]" (rect 138 43 187 54)(font "Arial" ))
 		(line (pt 208 48)(pt 192 48)(line_width 3))
 	)
 	(parameter
