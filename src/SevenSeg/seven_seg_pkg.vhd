@@ -1,5 +1,5 @@
-LIBRARY IEEE;
-USE IEEE.std_logic_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
 package seven_seg_pkg is
 
 component seven_seg
