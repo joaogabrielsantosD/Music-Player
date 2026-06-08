@@ -10,7 +10,7 @@ entity i2c is
       sda   : inout std_logic;                    -- SDA (I2C data bus)  
       data  : out   std_logic_vector(15 downto 0) -- Temperature data  
    );
-end entity i2c;
+end entity;
 
 architecture Behavioral of i2c is
 

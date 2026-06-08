@@ -15,7 +15,7 @@ entity seven_seg is
       dig      : out std_logic_vector(3 downto 0);
       seg      : out std_logic_vector(7 downto 0)
    );
-end seven_seg;
+end entity;
 
 architecture bhv of seven_seg is 
 	signal temp_raw_signed   : signed(8 downto 0);
