@@ -1,11 +1,6 @@
--- File        : i2c.vhd
--- Description : I2C Interface communication with LM75A
--- Author      : Malki-cedheq Benjamin
--- Date        : 2026
-
-library IEEE;
-use IEEE.std_logic_1164.ALL;
-use IEEE.numeric_std.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity i2c is
    port (
@@ -28,7 +23,7 @@ architecture Behavioral of i2c is
    signal timer_cnt : unsigned(25 downto 0);         -- Timer to read temperature every 1s  
    signal data_cnt  : unsigned(3 downto 0);          -- Serial-to-parallel conversion register
    signal addr_reg  : std_logic_vector(7 downto 0);  -- I2C device address
-   signal estado    : std_logic_vector(8 downto 0);  -- State register
+   signal state     : std_logic_vector(8 downto 0);  -- State register
 
    -- Constants equivalent to Verilog defines
    constant CNT_OVER       : unsigned(7 downto 0)  := to_unsigned(199, 8);
@@ -129,18 +124,18 @@ begin
 			data_r   <= (others => '0');
          sda_r    <= '1';
          sda_link <= '1';
-         estado   <= IDLE;
+         state   <= IDLE;
          addr_reg <= (others => '0');
          data_cnt <= (others => '0');
       elsif rising_edge(clk) then
-         case estado is
+         case state is
             when IDLE =>
                sda_r    <= '1';
                sda_link <= '1';
                if timer_cnt = TIMER_OVER then
-                   estado <= START;
+                   state <= START;
                else
-                   estado <= IDLE;
+                   state <= IDLE;
                end if;
 
             when START =>
@@ -148,21 +143,21 @@ begin
                    sda_r    <= '0';
                    sda_link <= '1';
                    addr_reg <= DEVICE_ADDRESS;
-                   estado   <= ADDRESS;
+                   state   <= ADDRESS;
                    data_cnt <= (others => '0');
                else
-                   estado <= START;
+                   state <= START;
                end if;
 
             when ADDRESS =>
                if SCL_LOW then
                   if data_cnt = 8 then
-                      estado   <= ACK1;
+                      state   <= ACK1;
                       data_cnt <= (others => '0');
                       sda_r    <= '1';
                       sda_link <= '0'; -- SDA high impedance (read mode)
                   else
-                      estado   <= ADDRESS;
+                      state   <= ADDRESS;
                       data_cnt <= data_cnt + 1;
                       case data_cnt is
                           when "0000" => sda_r <= addr_reg(7);
@@ -177,19 +172,19 @@ begin
                       end case;
                   end if;
                else
-                   estado <= ADDRESS;
+                   state <= ADDRESS;
                end if;
 
             when ACK1 =>
                if (sda = '0' and SCL_HIG) or SCL_NEG then
-                   estado <= READ1;
+                   state <= READ1;
                else
-                   estado <= ACK1;
+                   state <= ACK1;
                end if;
 
             when READ1 =>
                if SCL_LOW and (data_cnt = 8) then
-                   estado   <= ACK2;
+                   state   <= ACK2;
                    data_cnt <= (others => '0');
                    sda_r    <= '1';
                    sda_link <= '1';
@@ -207,7 +202,7 @@ begin
                        when others => null;
                    end case;
                else
-                   estado <= READ1;
+                   state <= READ1;
                end if;
 
             when ACK2 =>
@@ -216,14 +211,14 @@ begin
                elsif SCL_NEG then
                    sda_r    <= '1';
                    sda_link <= '0';
-                   estado   <= READ2;
+                   state   <= READ2;
                else
-                   estado <= ACK2;
+                   state <= ACK2;
                end if;
 
             when READ2 =>
                if SCL_LOW and (data_cnt = 8) then
-                   estado   <= NACK;
+                   state   <= NACK;
                    data_cnt <= (others => '0');
                    sda_r    <= '1';
                    sda_link <= '1';
@@ -241,27 +236,27 @@ begin
                        when others => null;
                    end case;
                else
-                   estado <= READ2;
+                   state <= READ2;
                end if;
 
-            when NACK =>
-               if SCL_LOW then
-                   estado <= STOP;
-                   sda_r  <= '0';
-               else
-                   estado <= NACK;
-               end if;
+                when NACK =>
+                    if SCL_LOW then
+                        state <= STOP;
+                        sda_r  <= '0';
+                    else
+                        state <= NACK;
+                    end if;
 
             when STOP =>
                if SCL_HIG then
-                   estado <= IDLE;
+                   state <= IDLE;
                    sda_r  <= '1';
                else
-                   estado <= STOP;
+                   state <= STOP;
                end if;
 
             when others =>
-						estado <= IDLE;
+						state <= IDLE;
          end case;
       end if;
    end process B5_PROCESS;
