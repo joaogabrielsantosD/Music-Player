@@ -4,6 +4,7 @@ use ieee.fsm_pkg.all;
 use ieee.i2c_pkg.all;
 use ieee.seven_seg_pkg.all;
 use ieee.lcd_vhdl_package.all;
+use ieee.music_pkg.all;
 
 entity top is
 	port (
@@ -15,6 +16,8 @@ entity top is
 		
 		dig : out std_logic_vector(3 downto 0);
 		seg : out std_logic_vector(7 downto 0);
+		
+		buzzer : out std_logic;
 		
 		lcd_rs : out std_logic;
 		lcd_rw : out std_logic;
@@ -30,6 +33,10 @@ end entity;
 architecture top_level of top is
 	signal temp_data : std_logic_vector(15 downto 0);
 	
+	signal stop_flag : std_logic;
+	signal play_flag : std_logic;
+	
+	signal music_mute      : std_logic;
 	signal music_selection : std_logic_vector(1 downto 0);
 	signal music_fsm_state : std_logic_vector(1 downto 0);
 	
@@ -52,8 +59,11 @@ begin
 		key => key(0),
 		button => key(3 downto 1),
 		debug => led,
+		mute => music_mute,
 		music_sel => music_selection,
 		music_state => music_fsm_state,
+		music_stop => stop_flag,
+		music_play => play_flag,
 		cnt_enable => cnt_enable,
 		cnt_clear => cnt_clear
 	);
@@ -107,6 +117,15 @@ begin
 		rs => lcd_rs,
 		e => lcd_en,
 		lcd_data => lcd_d
+	);
+	
+	msc : music port map (
+		clock => clock,
+		stop => stop_flag,
+		play => play_flag,
+		music_selection => music_selection,
+		mute => music_mute,
+		buzzer => buzzer
 	);
 	
 	--led(0) <= temp_data(8);
