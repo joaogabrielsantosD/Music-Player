@@ -1,147 +1,154 @@
-LIBRARY IEEE;
-USE IEEE.std_logic_1164.all;
-USE WORK.lcd_vhdl_package.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use work.lcd_vhdl_package.all;
 
-ENTITY lcd_logic IS
-  GENERIC(
-	    	musica_teste  : STD_LOGIC_VECTOR (1 DOWNTO 0) := "01";
-			minuto_teste  : STD_LOGIC_VECTOR (3 DOWNTO 0) := "0001"; -- Dígito 1
-         dez_seg_teste : STD_LOGIC_VECTOR (3 DOWNTO 0) := "0010"; -- Dígito 2
-         uni_seg_teste : STD_LOGIC_VECTOR (3 DOWNTO 0) := "0011"; -- Dígito 3
-        	dec_seg_teste : STD_LOGIC_VECTOR (3 DOWNTO 0) := "0100"  -- Dígito 4
-  		);
+entity lcd_logic is
+--  GENERIC (
+--	   music_test   : std_logic_vector (1 downto 0) := "01";
+--		minute_test  : std_logic_vector (3 downto 0) := "0001"; -- Digit 1
+--      dez_sec_test : std_logic_vector (3 downto 0) := "0010"; -- Digit 2
+--      uni_sec_test : std_logic_vector (3 downto 0) := "0011"; -- Digit 3
+--      dec_sec_test : std_logic_vector (3 downto 0) := "0100"  -- Digit 4
+--  	);
   
-  PORT( 	clk      : IN  STD_LOGIC;  -- Clock principal			
-			lcd_busy : IN  STD_LOGIC;  -- Feedback do controlador (1)ocupado/(0)disponível
-			
-			musica   : IN  STD_LOGIC_VECTOR (1 DOWNTO 0); -- Para quatro música
-			minuto   : IN  STD_LOGIC_VECTOR (3 DOWNTO 0); -- Sinais de tempo
-			dez_seg  : IN  STD_LOGIC_VECTOR (3 DOWNTO 0);
-			uni_seg  : IN  STD_LOGIC_VECTOR (3 DOWNTO 0);
-			dec_seg  : IN  STD_LOGIC_VECTOR (3 DOWNTO 0);
-			
-			fsm_state : IN  STD_LOGIC_VECTOR (1 DOWNTO 0); -- Botões
-			
-			lcd_e 	: OUT STD_LOGIC;  -- Retem os dados no controlador LCD
-			lcd_bar	: OUT STD_LOGIC_VECTOR (9 DOWNTO 0)  -- (9) rs (8) rw (7..0) dado char
-		);
-END entity;
+  port ( 	
+		clk      : in  std_logic;  -- Main clock			
+		lcd_busy : in  std_logic;  -- Controller feedback (1)busy/(0)available
+		
+		music   		: in  std_logic_vector (1 downto 0); -- For four songs
+		music_state : in  std_logic_vector (1 downto 0); -- Buttons
+		
+		minute   : in  std_logic_vector (3 downto 0); -- Current time signals
+		dez_sec  : in  std_logic_vector (3 downto 0);
+		uni_sec  : in  std_logic_vector (3 downto 0);
+		dec_sec  : in  std_logic_vector (3 downto 0);
+		
+		lcd_e 	: out std_logic;  -- Holds data in the LCD controller
+		lcd_bar	: out std_logic_vector (9 downto 0)  -- (9) rs (8) rw (7..0) char data
+	);
+end entity;
 
-ARCHITECTURE bhv OF lcd_logic IS
-	-- Registradores
-	SIGNAL lcd_enable : STD_LOGIC;
-	SIGNAL lcd_bus    : STD_LOGIC_VECTOR (9 DOWNTO 0);
-	-- Barramento de dados do display
-	SIGNAL L1 : STD_LOGIC_VECTOR (127 DOWNTO 0);
-	SIGNAL L2 : STD_LOGIC_VECTOR (127 DOWNTO 0);
+architecture bhv of lcd_logic is
+	-- Registers
+	signal lcd_enable : std_logic;
+	signal lcd_bus    : std_logic_vector (9 downto 0);
 	
-	-- Constantes com nomes das músicas (linha 1) - 16 caracteres               
-	CONSTANT musica_1 : STD_LOGIC_VECTOR (127 DOWNTO 0) := to_std_logic_vector("   TAKE ON ME   ");
-	CONSTANT musica_2 : STD_LOGIC_VECTOR (127 DOWNTO 0) := to_std_logic_vector(" CERULEAN THEME ");
-	CONSTANT musica_3 : STD_LOGIC_VECTOR (127 DOWNTO 0) := to_std_logic_vector("     MY WAY     ");
-	CONSTANT musica_4 : STD_LOGIC_VECTOR (127 DOWNTO 0) := to_std_logic_vector("   LOST WOODS   ");
+	-- Display data bus
+	signal L1 : std_logic_vector (127 downto 0);
+	signal L2 : std_logic_vector (127 downto 0);
 	
-	-- Constantes com nomes dos compositores (linha 2) - 7 caracteres
-	CONSTANT compositor_1 : STD_LOGIC_VECTOR (55 DOWNTO 0) := to_std_logic_vector(" A-HA  ");
-	CONSTANT compositor_2 : STD_LOGIC_VECTOR (55 DOWNTO 0) := to_std_logic_vector("POKEMON");
-	CONSTANT compositor_3 : STD_LOGIC_VECTOR (55 DOWNTO 0) := to_std_logic_vector("SINATRA");
-	CONSTANT compositor_4 : STD_LOGIC_VECTOR (55 DOWNTO 0) := to_std_logic_vector(" ZELDA ");
+	-- constants with song names (line 1) - 16 characters               
+	constant music_1 : std_logic_vector (127 downto 0) := to_std_logic_vector("   TAKE ON ME   ");
+	constant music_2 : std_logic_vector (127 downto 0) := to_std_logic_vector(" CERULEAN THEME ");
+	constant music_3 : std_logic_vector (127 downto 0) := to_std_logic_vector("     MY WAY     ");
+	constant music_4 : std_logic_vector (127 downto 0) := to_std_logic_vector("   LOST WOODS   ");
 	
-	CONSTANT dois_pontos  : STD_LOGIC_VECTOR (7 DOWNTO 0)   := x"3A";         -- ASCII para ':'
-	CONSTANT play         : STD_LOGIC_VECTOR (15 DOWNTO 0)  := x"3E" & x"20"; -- ASCII para '>'
-	CONSTANT pause        : STD_LOGIC_VECTOR (15 DOWNTO 0)  := x"FF" & x"20"; -- bloco cheio
-	CONSTANT stop         : STD_LOGIC_VECTOR (15 DOWNTO 0)  := x"3D" & x"20"; -- '='
-	--CONSTANT controles    : STD_LOGIC_VECTOR (23 DOWNTO 0) := play & pause & stop;
-	SIGNAL tempo          : STD_LOGIC_VECTOR (55 DOWNTO 0);
-	SIGNAL estado_atual   : STD_LOGIC_VECTOR (1 DOWNTO 0) := "00";
-	SIGNAL control_status : STD_LOGIC_VECTOR (15 DOWNTO 0);
+	-- constants with composer names (line 2) - 7 characters
+	constant composer_1 : std_logic_vector (55 downto 0) := to_std_logic_vector(" A-HA  ");
+	constant composer_2 : std_logic_vector (55 downto 0) := to_std_logic_vector("POKEMON");
+	constant composer_3 : std_logic_vector (55 downto 0) := to_std_logic_vector("SinATRA");
+	constant composer_4 : std_logic_vector (55 downto 0) := to_std_logic_vector(" ZELDA ");
+	
+	constant two_points  : std_logic_vector (7 downto 0)   := x"3A";         -- ASCII for ':'
+	constant play         : std_logic_vector (15 downto 0)  := x"3E" & x"20"; -- ASCII for '>'
+	constant pause        : std_logic_vector (15 downto 0)  := x"FF" & x"20"; -- full block
+	constant stop         : std_logic_vector (15 downto 0)  := x"3D" & x"20"; -- '='
+	
+	--constant controles    : std_logic_vector (23 downto 0) := play & pause & stop;
+	signal current_time   : std_logic_vector (55 downto 0);
+	signal control_status : std_logic_vector (15 downto 0);
 	
 	
-BEGIN
-	-- atribuição contínua das saídas registradas
+begin
+	-- Continuous assignment of registered outputs
 	lcd_e <= lcd_enable;
 	lcd_bar <= lcd_bus; 
-	tempo <= x"20" & "0011" & minuto_teste & dois_pontos & "0011" & dez_seg_teste & "0011" & uni_seg_teste & dois_pontos & "0011" & dec_seg_teste; 
-	estado_atual <= fsm_state;
+	
+	current_time <= x"20" & "0011" & minute & two_points & "0011" & dez_sec & "0011" & uni_sec & two_points & "0011" & dec_sec; 
+	
+	with music_state select
+		control_status <= play  when "01",
+		                  pause when "10",
+						      stop  when others;
 	 
-	 WITH estado_atual SELECT
-		control_status <= play  WHEN "01",
-		                  pause WHEN "10",
-						      stop  WHEN OTHERS;
+	process(music, control_status, current_time) 
+   begin
+      case music is
+         when "00" => 
+            L1 <= music_1;
+            L2 <= control_status & composer_1 & current_time;
+         when "01" => 
+            L1 <= music_2;
+            L2 <= control_status & composer_2 & current_time;
+         when "10" => 
+            L1 <= music_3;
+            L2 <= control_status & composer_3 & current_time;
+         when "11" => 
+            L1 <= music_4;
+            L2 <= control_status & composer_4 & current_time;
+         when others => 
+            L1 <= (others => '0');
+            L2 <= (others => '0');
+      end case;
+   end process;
 	 
-	 PROCESS(musica, control_status, tempo) 
-    BEGIN
-        CASE musica IS
-            WHEN "00" => 
-                L1 <= musica_1;
-                L2 <= control_status & compositor_1 & tempo;
-            WHEN "01" => 
-                L1 <= musica_2;
-                L2 <= control_status & compositor_2 & tempo;
-            WHEN "10" => 
-                L1 <= musica_3;
-                L2 <= control_status & compositor_3 & tempo;
-            WHEN "11" => 
-                L1 <= musica_4;
-                L2 <= control_status & compositor_4 & tempo;
-            WHEN OTHERS => 
-                L1 <= (OTHERS => '0');
-                L2 <= (OTHERS => '0');
-        END CASE;
-    END PROCESS;
-	 
-	--Sequenciamento do envio de cada caractere de L1 e L2
-	PROCESS(clk)
-		VARIABLE char  :  INTEGER RANGE 0 TO 34 := 0; --6 bits
-		BEGIN
-			IF rising_edge(clk) THEN
-				IF (lcd_busy = '0' AND lcd_enable = '0') THEN
-					lcd_enable <= '1'; --habilita o LCD
-					IF (char < 34) THEN
-						char := char + 1; --incrementa o estado
-					ELSE 
-						char := 0; --reinicia o estado
-					END IF;
-					CASE char IS --verifica o estado atual
-						WHEN 0  => lcd_bus <= "00" & "10000000"; --inst. linha 1
-						WHEN 1  => lcd_bus <= "10" & L1(127 DOWNTO 120); --prim. char da linha 1
-						WHEN 2  => lcd_bus <= "10" & L1(119 DOWNTO 112);
-						WHEN 3  => lcd_bus <= "10" & L1(111 DOWNTO 104);
-						WHEN 4  => lcd_bus <= "10" & L1(103 DOWNTO 96);
-						WHEN 5  => lcd_bus <= "10" & L1(95 DOWNTO 88);
-						WHEN 6  => lcd_bus <= "10" & L1(87 DOWNTO 80);
-						WHEN 7  => lcd_bus <= "10" & L1(79 DOWNTO 72);
-						WHEN 8  => lcd_bus <= "10" & L1(71 DOWNTO 64);
-						WHEN 9  => lcd_bus <= "10" & L1(63 DOWNTO 56);
-						WHEN 10 => lcd_bus <= "10" & L1(55 DOWNTO 48);
-						WHEN 11 => lcd_bus <= "10" & L1(47 DOWNTO 40);
-						WHEN 12 => lcd_bus <= "10" & L1(39 DOWNTO 32);
-						WHEN 13 => lcd_bus <= "10" & L1(31 DOWNTO 24);
-						WHEN 14 => lcd_bus <= "10" & L1(23 DOWNTO 16);
-						WHEN 15 => lcd_bus <= "10" & L1(15 DOWNTO 8);
-						WHEN 16 => lcd_bus <= "10" & L1(7 DOWNTO 0); --ult char da linha 1
-						WHEN 17 => lcd_bus <= "00" & "11000000"; --inst. linha 2
-						WHEN 18 => lcd_bus <= "10" & L2(127 DOWNTO 120); --prim. char da linha 2
-						WHEN 19 => lcd_bus <= "10" & L2(119 DOWNTO 112);
-						WHEN 20 => lcd_bus <= "10" & L2(111 DOWNTO 104);
-						WHEN 21 => lcd_bus <= "10" & L2(103 DOWNTO 96);
-						WHEN 22 => lcd_bus <= "10" & L2(95 DOWNTO 88);
-						WHEN 23 => lcd_bus <= "10" & L2(87 DOWNTO 80);
-						WHEN 24 => lcd_bus <= "10" & L2(79 DOWNTO 72);
-						WHEN 25 => lcd_bus <= "10" & L2(71 DOWNTO 64);
-						WHEN 26 => lcd_bus <= "10" & L2(63 DOWNTO 56);
-						WHEN 27 => lcd_bus <= "10" & L2(55 DOWNTO 48);
-						WHEN 28 => lcd_bus <= "10" & L2(47 DOWNTO 40);
-						WHEN 29 => lcd_bus <= "10" & L2(39 DOWNTO 32);
-						WHEN 30 => lcd_bus <= "10" & L2(31 DOWNTO 24);
-						WHEN 31 => lcd_bus <= "10" & L2(23 DOWNTO 16);
-						WHEN 32 => lcd_bus <= "10" & L2(15 DOWNTO 8);
-						WHEN 33 => lcd_bus <= "10" & L2(7 DOWNTO 0);--ult. char da linha 2			 
-						WHEN OTHERS => lcd_enable <= '0'; --desabilita o LCD
-					END CASE;
-				ELSE
-					lcd_enable <= '0'; --desabilita o LCD
-				END IF;
-			END IF;
-	END PROCESS;
-END bhv;
+	-- Sequencing of each character transmission from L1 and L2
+	process(clk)
+		variable char  :  integer range 0 to 34 := 0; --6 bits
+		begin
+			if rising_edge(clk) then
+				if (lcd_busy = '0' and lcd_enable = '0') then
+					lcd_enable <= '1'; --enable LCD
+					
+					if (char < 34) then
+						char := char + 1; --increment state
+					else 
+						char := 0; --reset state
+					end if;
+					
+					case char is --check current state
+						when 0  => lcd_bus <= "00" & "10000000"; --line 1 instruction
+						when 1  => lcd_bus <= "10" & L1(127 downto 120); --first char of line 1
+						when 2  => lcd_bus <= "10" & L1(119 downto 112);
+						when 3  => lcd_bus <= "10" & L1(111 downto 104);
+						when 4  => lcd_bus <= "10" & L1(103 downto 96);
+						when 5  => lcd_bus <= "10" & L1(95 downto 88);
+						when 6  => lcd_bus <= "10" & L1(87 downto 80);
+						when 7  => lcd_bus <= "10" & L1(79 downto 72);
+						when 8  => lcd_bus <= "10" & L1(71 downto 64);
+						when 9  => lcd_bus <= "10" & L1(63 downto 56);
+						when 10 => lcd_bus <= "10" & L1(55 downto 48);
+						when 11 => lcd_bus <= "10" & L1(47 downto 40);
+						when 12 => lcd_bus <= "10" & L1(39 downto 32);
+						when 13 => lcd_bus <= "10" & L1(31 downto 24);
+						when 14 => lcd_bus <= "10" & L1(23 downto 16);
+						when 15 => lcd_bus <= "10" & L1(15 downto 8);
+						when 16 => lcd_bus <= "10" & L1(7 downto 0); --last char of line 1
+						
+						when 17 => lcd_bus <= "00" & "11000000"; --line 2 instruction
+						
+						when 18 => lcd_bus <= "10" & L2(127 downto 120); --first char of line 2
+						when 19 => lcd_bus <= "10" & L2(119 downto 112);
+						when 20 => lcd_bus <= "10" & L2(111 downto 104);
+						when 21 => lcd_bus <= "10" & L2(103 downto 96);
+						when 22 => lcd_bus <= "10" & L2(95 downto 88);
+						when 23 => lcd_bus <= "10" & L2(87 downto 80);
+						when 24 => lcd_bus <= "10" & L2(79 downto 72);
+						when 25 => lcd_bus <= "10" & L2(71 downto 64);
+						when 26 => lcd_bus <= "10" & L2(63 downto 56);
+						when 27 => lcd_bus <= "10" & L2(55 downto 48);
+						when 28 => lcd_bus <= "10" & L2(47 downto 40);
+						when 29 => lcd_bus <= "10" & L2(39 downto 32);
+						when 30 => lcd_bus <= "10" & L2(31 downto 24);
+						when 31 => lcd_bus <= "10" & L2(23 downto 16);
+						when 32 => lcd_bus <= "10" & L2(15 downto 8);
+						when 33 => lcd_bus <= "10" & L2(7 downto 0); --last char of line 2			 
+						
+						when others => lcd_enable <= '0'; --disable LCD
+					end case;
+				else
+					lcd_enable <= '0'; --disable LCD
+				end if;
+			end if;
+	end process;
+end bhv;

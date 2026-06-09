@@ -33,6 +33,9 @@ architecture top_level of top is
 	signal music_selection : std_logic_vector(1 downto 0);
 	signal music_fsm_state : std_logic_vector(1 downto 0);
 	
+	signal cnt_enable : std_logic;
+	signal cnt_clear  : std_logic;
+	
 	signal min  : std_logic_vector(3 downto 0);
 	signal dsec : std_logic_vector(3 downto 0);
 	signal usec : std_logic_vector(3 downto 0);
@@ -50,7 +53,9 @@ begin
 		button => key(3 downto 1),
 		debug => led,
 		music_sel => music_selection,
-		music_state => music_fsm_state
+		music_state => music_fsm_state,
+		cnt_enable => cnt_enable,
+		cnt_clear => cnt_clear
 	);
 
 	temperature : i2c port map (
@@ -68,15 +73,26 @@ begin
 		seg => seg
 	);
 	
+	time_c : entity work.timer_counter port map (
+		clk => clock,
+		rst_n => rst_n,
+		enable => cnt_enable,
+		clear => cnt_clear,
+		minute => min,
+		dez_sec => dsec,
+		uni_sec => usec,
+		dec_sec => msec
+	);
+	
 	ctrl_lcd : lcd_logic port map (
 		clk => clock,
 		lcd_busy => lcd_busy,
-		musica => music_selection,
-		minuto => min,
-		dez_seg => dsec,
-		uni_seg => usec,
-		dec_seg => msec,
-		fsm_state => music_fsm_state,
+		music => music_selection,
+		music_state => music_fsm_state,
+		minute => min,
+		dez_sec => dsec,
+		uni_sec => usec,
+		dec_sec => msec,
 		lcd_e => lcd_enable_int,
 		lcd_bar => lcd_bus_int
 	);

@@ -24,14 +24,14 @@ package lcd_vhdl_package is
 		clk      : in  std_logic;  -- Main clock			
 		lcd_busy : in  std_logic;  -- Controller feedback (1)busy/(0)available
 		
-		musica   : in  std_logic_vector (1 downto 0); -- For four songs
-		minuto   : in  std_logic_vector (3 downto 0); -- Time signals
-		dez_seg  : in  std_logic_vector (3 downto 0);
-		uni_seg  : in  std_logic_vector (3 downto 0);
-		dec_seg  : in  std_logic_vector (3 downto 0);
+		music   : in  std_logic_vector (1 downto 0); -- For four songs
+		music_state : in  std_logic_vector (1 downto 0);
 		
-		fsm_state : in  std_logic_vector (1 downto 0);
-		
+		minute   : in  std_logic_vector (3 downto 0); -- Time signals
+		dez_sec  : in  std_logic_vector (3 downto 0);
+		uni_sec  : in  std_logic_vector (3 downto 0);
+		dec_sec  : in  std_logic_vector (3 downto 0);
+
 		lcd_e 	: out std_logic;  -- Holds data in the LCD controller
 		lcd_bar	: out std_logic_vector (9 downto 0)  -- (9) rs (8) rw (7..0) char data
 	);
