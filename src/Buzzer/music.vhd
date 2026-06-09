@@ -48,6 +48,6 @@ begin
       selection => music_selection
    );
 
-   buzzer <= beep when mute = '1' else '0'; 
+   buzzer <= beep when mute = '0' else '0'; 
 
 end player;

@@ -141,7 +141,7 @@ begin
    cnt_enable  <= '1' when current_state = ST_PLAY else '0';
    cnt_clear   <= '1' when current_state = ST_STOP else '0';
 
-   mute <= not key;
+   mute <= key;
 
    with current_state select
       music_state <= "00" when ST_STOP,
