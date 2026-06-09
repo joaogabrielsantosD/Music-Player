@@ -1,5 +1,5 @@
-LIBRARY IEEE;
-USE IEEE.std_logic_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
 package fsm_pkg is
 
 component fsm
