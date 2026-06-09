@@ -12,3 +12,8 @@ project/
 ├── output/        # Output folder to Quartus compilation
 └── README.md
 ```
+
+- Can use the ```src/top.vhd``` (VHDL file) or ```tests/subtop_test.bdf``` (Block Diagram file) to flash the firmware.
+
+### Top RTL connection using Blocks Diagrams
+[<img src="docs/subtop_test.png" alt="Top RTL Block Diagram" width="500" />](docs/subtop_test.png)
