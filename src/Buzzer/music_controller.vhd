@@ -100,7 +100,7 @@ architecture arc of music_controller is
 	constant ov3_t1_4	: integer := (clk_FPGA / 4) / BPS3;
 	
 	-- My Way constants
-	constant BPM4 : integer := 80; 
+	constant BPM4 : integer := 100; 
 	constant BPS4 : integer := BPM4 / 60; 
 	constant ov4_t4 : integer := (4 * clk_FPGA) / BPS4; 
 	constant ov4_t3 : integer := (3 * clk_FPGA) / BPS4; 
@@ -164,34 +164,34 @@ architecture arc of music_controller is
 	constant music3 : vetor_myway := (
 		(note => Fs4, time_t => ov4_t1), (note => G4,  time_t => ov4_t1), 
 		(note => A4,  time_t => ov4_t1), (note => A4,  time_t => ov4_t2), 
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => B4,  time_t => ov4_t1), (note => A4,  time_t => ov4_t1), 
 		(note => Gs4, time_t => ov4_t1), (note => A4,  time_t => ov4_t2), 
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => A4,  time_t => ov4_t1), (note => A4,  time_t => ov4_t1), 
 		(note => B4,  time_t => ov4_t1), (note => B4,  time_t => ov4_t2),
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => C5,  time_t => ov4_t1), (note => B4,  time_t => ov4_t1), 
 		(note => A4,  time_t => ov4_t1), (note => B4,  time_t => ov4_t2), 
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => B4,  time_t => ov4_t1), (note => Cs5, time_t => ov4_t1), 
 		(note => D5,  time_t => ov4_t1), (note => D5,  time_t => ov4_t2), 
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => B4,  time_t => ov4_t1), (note => D5,  time_t => ov4_t1), 
 		(note => B4,  time_t => ov4_t1), (note => Cs5, time_t => ov4_t2),
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => Cs5, time_t => ov4_t1), (note => D5,  time_t => ov4_t1), 
 		(note => E5,  time_t => ov4_t1), (note => E5,  time_t => ov4_t2), 
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => Fs5, time_t => ov4_t1), (note => Cs5, time_t => ov4_t1),
 		(note => E5,  time_t => ov4_t1), (note => D5,  time_t => ov4_t2), 
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => B4,  time_t => ov4_t1), (note => Cs4, time_t => ov4_t1), 
 		(note => D5,  time_t => ov4_t1), (note => D5,  time_t => ov4_t2),
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => B4,  time_t => ov4_t1), (note => D5,  time_t => ov4_t1), 
 		(note => B4,  time_t => ov4_t1), (note => Cs5, time_t => ov4_t1), 
-		(note => PAUSE, time_t => ov4_t1),
+		(note => PAUSE, time_t => ov4_t1_2),
 		(note => Cs5, time_t => ov4_t1), (note => D5,  time_t => ov4_t1),
 		(note => E5,  time_t => ov4_t1), (note => E5,  time_t => ov4_t2), 
 		(note => D5,  time_t => ov4_t2)
