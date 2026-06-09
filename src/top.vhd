@@ -1,39 +1,117 @@
--- EXAMPLE CODE
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.fsm_pkg.all;
+use ieee.i2c_pkg.all;
+use ieee.seven_seg_pkg.all;
+use ieee.lcd_vhdl_package.all;
 
-LIBRARY IEEE;
-USE IEEE.std_logic_1164.ALL;
-
-ENTITY top IS
-	PORT(
-		x : IN  integer;
-		y : OUT integer 
+entity top is
+	port (
+		clock : in  std_logic;
+		rst_n : in std_logic;
+		
+		scl : out   std_logic;
+		sda : inout std_logic;
+		
+		dig : out std_logic_vector(3 downto 0);
+		seg : out std_logic_vector(7 downto 0);
+		
+		lcd_rs : out std_logic;
+		lcd_rw : out std_logic;
+		lcd_en : out std_logic;
+		lcd_d  : out std_logic_vector(7 downto 0);
+		
+		key : in std_logic_vector(3 downto 0);
+		
+		led : out std_logic_vector(3 downto 0)
 	);
-END ENTITY;
+end entity;
 
-ARCHITECTURE top_level OF top IS
-	COMPONENT dff
-		PORT(
-			d    : IN  std_logic;
-			clk  : IN  std_logic;
-			clrn : IN  std_logic;
-			prn  : IN  std_logic;
-			q    : OUT std_logic
-		);
-	END COMPONENT;
+architecture top_level of top is
+	signal temp_data : std_logic_vector(15 downto 0);
 	
-	SIGNAL s : integer;
-	CONSTANT c : integer := 7;
-	SHARED VARIABLE v1 : integer;
+	signal music_selection : std_logic_vector(1 downto 0);
+	signal music_fsm_state : std_logic_vector(1 downto 0);
 	
-BEGIN
-	PROCESS (x)
-		VARIABLE v2 : integer := 3;
+	signal cnt_enable : std_logic;
+	signal cnt_clear  : std_logic;
 	
-	BEGIN
-		v1 := 5;
-		s <= v1 + v2 + c;
-	END PROCESS;
+	signal min  : std_logic_vector(3 downto 0);
+	signal dsec : std_logic_vector(3 downto 0);
+	signal usec : std_logic_vector(3 downto 0);
+	signal msec : std_logic_vector(3 downto 0);
 	
-	y <= s + x;
+	signal lcd_busy : std_logic;
+	signal lcd_enable_int : std_logic;
+	signal lcd_bus_int    : std_logic_vector(9 downto 0);
 
-END top_level;
+begin
+	fsm_states : fsm port map (
+		clock => clock,
+		rst_n => rst_n,
+		key => key(0),
+		button => key(3 downto 1),
+		debug => led,
+		music_sel => music_selection,
+		music_state => music_fsm_state,
+		cnt_enable => cnt_enable,
+		cnt_clear => cnt_clear
+	);
+
+	temperature : i2c port map (
+		clk => clock,
+		rst_n => rst_n,
+		scl => scl,
+		sda => sda,
+		data => temp_data
+	);
+	
+	display7 : seven_seg port map (
+		clk => clock,
+		data_in => temp_data,
+		dig => dig,
+		seg => seg
+	);
+	
+	time_c : entity work.timer_counter port map (
+		clk => clock,
+		rst_n => rst_n,
+		enable => cnt_enable,
+		clear => cnt_clear,
+		minute => min,
+		dez_sec => dsec,
+		uni_sec => usec,
+		dec_sec => msec
+	);
+	
+	ctrl_lcd : lcd_logic port map (
+		clk => clock,
+		lcd_busy => lcd_busy,
+		music => music_selection,
+		music_state => music_fsm_state,
+		minute => min,
+		dez_sec => dsec,
+		uni_sec => usec,
+		dec_sec => msec,
+		lcd_e => lcd_enable_int,
+		lcd_bar => lcd_bus_int
+	);
+	
+	lcd_hw : lcd_controller port map (
+		clk => clock,
+		reset_n => rst_n,
+		lcd_enable => lcd_enable_int,
+		lcd_bus => lcd_bus_int,
+		busy => lcd_busy,
+		rw => lcd_rw,
+		rs => lcd_rs,
+		e => lcd_en,
+		lcd_data => lcd_d
+	);
+	
+	--led(0) <= temp_data(8);
+	--led(1) <= temp_data(9);
+	--led(2) <= temp_data(10);
+	--led(3) <= temp_data(11);
+
+end top_level;
