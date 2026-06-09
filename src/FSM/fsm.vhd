@@ -15,6 +15,10 @@ entity fsm is
       music_state : out std_logic_vector(1 downto 0);
       -- "00"=STOP  "01"=PLAY  "10"=PAUSE  "11"=ERROR
 		
+		music_stop  : out std_logic;
+		music_play  : out std_logic;
+		music_pause : out std_logic;
+		
 		cnt_enable : out std_logic;
 		cnt_clear  : out std_logic;
 		
@@ -35,10 +39,6 @@ architecture bhv of fsm is
 	signal btn_play_pause : std_logic;
 	signal btn_select     : std_logic;
 	signal btn_stop_btn   : std_logic;
-
-	--signal music_stop  : std_logic;
-   --signal music_play  : std_logic;
-   --signal music_pause : std_logic;
 
    type control_state_t is (ST_STOP, ST_PLAY, ST_PAUSE);
 
@@ -132,9 +132,9 @@ begin
       end if;
    end process;
 
-   --music_stop  <= '1' when current_state = ST_STOP  else '0';
-   --music_play  <= '1' when current_state = ST_PLAY  else '0';
-   --music_pause <= '1' when current_state = ST_PAUSE else '0';
+   music_stop  <= '1' when current_state = ST_STOP  else '0';
+   music_play  <= '1' when current_state = ST_PLAY  else '0';
+   music_pause <= '1' when current_state = ST_PAUSE else '0';
 
    music_sel   <= music_sel_int;
 

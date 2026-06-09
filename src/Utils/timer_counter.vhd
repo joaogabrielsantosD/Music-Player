@@ -4,14 +4,14 @@ use ieee.numeric_std.all;
 
 entity timer_counter is
   port (
-    clk     : in  std_logic;
-    rst_n   : in  std_logic;
-    enable  : in  std_logic;
-    clear   : in  std_logic;
-    minute  : out std_logic_vector(3 downto 0);
-    dez_sec : out std_logic_vector(3 downto 0);
-    uni_sec : out std_logic_vector(3 downto 0);
-    dec_sec : out std_logic_vector(3 downto 0)
+		clk     : in  std_logic;
+		rst_n   : in  std_logic;
+		enable  : in  std_logic;
+		clear   : in  std_logic;
+		minute  : out std_logic_vector(3 downto 0);
+		dez_sec : out std_logic_vector(3 downto 0);
+		uni_sec : out std_logic_vector(3 downto 0);
+		dec_sec : out std_logic_vector(3 downto 0)
   );
 end entity;
 
