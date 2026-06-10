@@ -44,22 +44,22 @@ begin
 					cnt_div <= cnt_div + 1;
 				else
 					cnt_div <= 0;
-					-- incrementa decimos de segundo
+					-- increments tenths of a second
 					if dec_sec_int < 9 then
 						dec_sec_int <= dec_sec_int + 1;
 					else
 						dec_sec_int <= 0;
-					-- incrementa unidade de segundo
+						-- increments by one second
 						if uni_sec_int < 9 then
 							uni_sec_int <= uni_sec_int + 1;
 						else
 							uni_sec_int <= 0;
-							-- incrementa dezena de segundo
+							-- increments by tens of seconds
 							if dez_sec_int < 5 then
 								dez_sec_int <= dez_sec_int + 1;
 							else
 								dez_sec_int <= 0;
-								-- incrementa minuto
+								-- increment minute
 								if minute_int < 9 then
 									minute_int <= minute_int + 1;
 								else

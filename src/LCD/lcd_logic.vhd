@@ -49,7 +49,7 @@ architecture bhv of lcd_logic is
 	constant composer_3 : std_logic_vector (55 downto 0) := to_std_logic_vector("SinATRA");
 	constant composer_4 : std_logic_vector (55 downto 0) := to_std_logic_vector(" ZELDA ");
 	
-	constant two_points  : std_logic_vector (7 downto 0)   := x"3A";         -- ASCII for ':'
+	constant two_points   : std_logic_vector (7 downto 0)   := x"3A";         -- ASCII for ':'
 	constant play         : std_logic_vector (15 downto 0)  := x"3E" & x"20"; -- ASCII for '>'
 	constant pause        : std_logic_vector (15 downto 0)  := x"FF" & x"20"; -- full block
 	constant stop         : std_logic_vector (15 downto 0)  := x"3D" & x"20"; -- '='
